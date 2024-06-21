@@ -7,19 +7,23 @@ lg.setLevel(rdkit.RDLogger.CRITICAL)
 
 idxfunc = lambda a : a.GetAtomMapNum() - 1
 
+# understood
 def set_atommap(mol, num=0):
     for atom in mol.GetAtoms():
         atom.SetAtomMapNum(num)
     return mol
 
+# understood
 def get_mol(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is not None: Chem.Kekulize(mol)
     return mol
 
+# understood
 def get_smiles(mol):
     return Chem.MolToSmiles(mol, kekuleSmiles=True)
 
+# understood - The function ensures that the returned molecule is in a canonical and sanitized form.
 def sanitize(mol, kekulize=True):
     try:
         smiles = get_smiles(mol) if kekulize else Chem.MolToSmiles(mol)
@@ -27,14 +31,14 @@ def sanitize(mol, kekulize=True):
     except:
         mol = None
     return mol
-
+# understood - it is checking if the molecule is a valid aromatic molecule
 def is_aromatic_ring(mol):
     if mol.GetNumAtoms() == mol.GetNumBonds(): 
         aroma_bonds = [b for b in mol.GetBonds() if b.GetBondType() == Chem.rdchem.BondType.AROMATIC]
         return len(aroma_bonds) == mol.GetNumBonds()
     else:
         return False
-
+    
 def get_leaves(mol):
     leaf_atoms = [atom.GetIdx() for atom in mol.GetAtoms() if atom.GetDegree() == 1]
 
@@ -57,14 +61,17 @@ def get_leaves(mol):
 
     return leaf_atoms + leaf_rings
 
+# understood - it is checking if the two atoms are same
 def atom_equal(a1, a2):
     return a1.GetSymbol() == a2.GetSymbol() and a1.GetFormalCharge() == a2.GetFormalCharge()
 
+# understood - it is checking if the bond between the two atoms in the two molecules are same
 def bond_match(mol1, a1, b1, mol2, a2, b2):
     a1,b1 = mol1.GetAtomWithIdx(a1), mol1.GetAtomWithIdx(b1)
     a2,b2 = mol2.GetAtomWithIdx(a2), mol2.GetAtomWithIdx(b2)
     return atom_equal(a1,a2) and atom_equal(b1,b2)
 
+# understood - copying an atom along with the formal charge and atom map number
 def copy_atom(atom, atommap=True):
     new_atom = Chem.Atom(atom.GetSymbol())
     new_atom.SetFormalCharge(atom.GetFormalCharge())
@@ -73,6 +80,7 @@ def copy_atom(atom, atommap=True):
     return new_atom
 
 #mol must be RWMol object
+# understood - it is creating a sub molecule from the given molecule along with the bonds
 def get_sub_mol(mol, sub_atoms):
     new_mol = Chem.RWMol()
     atom_map = {}
@@ -92,6 +100,7 @@ def get_sub_mol(mol, sub_atoms):
 
     return new_mol.GetMol()
 
+# understood - it is just copying an entire molecule
 def copy_edit_mol(mol):
     new_mol = Chem.RWMol(Chem.MolFromSmiles(''))
     for atom in mol.GetAtoms():
@@ -156,12 +165,14 @@ def get_inter_label(mol, atoms, inter_atoms):
         a.SetAtomMapNum( 1 if idxfunc(a) in inter_atoms else 0 )
     return new_mol, inter_label
 
+# understood
 def is_anchor(atom, inter_atoms):
     for a in atom.GetNeighbors():
         if idxfunc(a) not in inter_atoms:
             return True
     return False
-            
+
+# understood    
 def get_anchor_smiles(mol, anchor, idxfunc=idxfunc):
     copy_mol = Chem.Mol(mol)
     for a in copy_mol.GetAtoms():
