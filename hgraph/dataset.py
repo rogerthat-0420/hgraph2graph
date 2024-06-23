@@ -8,6 +8,7 @@ from hgraph.chemutils import get_leaves
 from hgraph.mol_graph import MolGraph
 
 
+# takes a datase, does some sanitary checks to ensure that only the desired format of data containing all the necessary information is passed to the model. after this preprocessing, it is added to the batches list.
 class MoleculeDataset(Dataset):
 
     def __init__(self, data, vocab, avocab, batch_size):
@@ -34,6 +35,7 @@ class MoleculeDataset(Dataset):
     def __getitem__(self, idx):
         return MolGraph.tensorize(self.batches[idx], self.vocab, self.avocab)
 
+# this class is designed for a specific type of molecular data proccessing where the input data is already pre-processed or does not require batching.
 
 class MolEnumRootDataset(Dataset):
 
@@ -99,11 +101,14 @@ class DataFolder(object):
             fn = os.path.join(self.data_folder, fn)
             with open(fn, 'rb') as f:
                 batches = pickle.load(f)
+                # pickle reconstitutes the serialised object from the file
 
             if self.shuffle: random.shuffle(batches) #shuffle data before batch
             for batch in batches:
                 yield batch
+                # helps in generating one batch at a time without putting the entire data in memory
 
             del batches
-            gc.collect()
+            #gc.collect() is a garbage collection function that helps in clearing memory
+            gc.collect() 
 
