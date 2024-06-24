@@ -5,7 +5,7 @@ from hgraph.nnutils import *
 class GRU(nn.Module):
 
     def __init__(self, input_size, hidden_size, depth):
-        super(GRU, self).__init__()
+        super(GRU, self).__init__() 
         self.hidden_size = hidden_size
         self.input_size = input_size
         self.depth = depth

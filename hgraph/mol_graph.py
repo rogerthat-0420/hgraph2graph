@@ -16,8 +16,8 @@ class MolGraph(object):
         self.smiles = smiles
         self.mol = get_mol(smiles)
 
-        self.mol_graph = self.build_mol_graph()
-        self.clusters, self.atom_cls = self.find_clusters()
+        self.mol_graph = self.build_mol_graph() #graph representation of the molecule
+        self.clusters, self.atom_cls = self.find_clusters() #clusters and atom_cls
         self.mol_tree = self.tree_decomp()
         self.order = self.label_tree()
 
@@ -34,8 +34,11 @@ class MolGraph(object):
             if not bond.IsInRing():
                 clusters.append( (a1,a2) )
 
+# smallest set of smallest rings 
         ssr = [tuple(x) for x in Chem.GetSymmSSSR(mol)]
         clusters.extend(ssr)
+
+# this code snippet checks if the root node is not 0 in the clusters list. If it is not, it finds the cluster containing the root node and moves it to the beginning of the list. This reordering ensures that the cluster containing the root node is always at index 0 in the clusters list.
 
         if 0 not in clusters[0]: #root is not node[0]
             for i,cls in enumerate(clusters):
@@ -44,6 +47,7 @@ class MolGraph(object):
                     #clusters[i], clusters[0] = clusters[0], clusters[i]
                     break
 
+#  this code snippet is populating the atom_cls list based on the clusters and atoms provided, associating each atom with the clusters it belongs to.
         atom_cls = [[] for i in range(n_atoms)]
         for i in range(len(clusters)):
             for atom in clusters[i]:
@@ -131,7 +135,9 @@ class MolGraph(object):
                             if type(label) is int: #in case one bond is assigned multiple times
                                 self.mol_graph[ch_atom][fa_atom]['label'] = (label, child_order)
         return order
-       
+
+# this method takes a molecule object, constructs a directed graph representation of the molecule, and returns the graph. The graph contains nodes representing atoms with labels indicating the atom's symbol and formal charge, and edges representing bonds with labels indicating the bond type.
+
     def build_mol_graph(self):
         mol = self.mol
         graph = nx.DiGraph(Chem.rdmolops.GetAdjacencyMatrix(mol))
